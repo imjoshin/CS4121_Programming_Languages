@@ -1,0 +1,11 @@
+int x;
+void main(){
+  x=1;
+  if(x > 10){
+    output(1);
+  }
+  while(x < 10){
+    output(x);
+    x=x+1;
+  }
+}

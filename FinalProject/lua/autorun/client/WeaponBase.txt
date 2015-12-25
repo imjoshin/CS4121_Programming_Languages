@@ -1,0 +1,57 @@
+
+SWEP.PrintName = "Custom Weapon"
+SWEP.Author = ''"BF, RH, JJ, TT"
+SWEP.Insructions = "Do stuff."
+
+
+function SWEP:SecondaryAttack()
+	print("speed in sAttach: " .. secondaryProjectileSpeed)
+	self.Weapon:SetNextPrimaryFire( CurTime() + secondaryfireRate )
+	self:Shoot( secondaryShot,  secondarySound, secondaryProjectileSpeed, secondaryshotsPerRound)
+end
+
+
+function SWEP:PrimaryAttack()
+	print("speed in pAttack: " .. primaryProjectileSpeed)
+	self.Weapon:SetNextPrimaryFire( CurTime() + primaryfireRate )
+	self:Shoot( primaryShot, primarySound, primaryProjectileSpeed, primaryshotsPerRound)
+end
+
+function SWEP:Shoot( model_file, sound, speed, shots)
+	print("speed in Shoot: " .. speed)
+
+	self:EmitSound( sound )
+
+	for i=1, shots do
+		if ( CLIENT ) then return end
+		local ent = ents.Create( "prop_physics" )
+		if ( !IsValid( ent ) ) then return end
+
+		ent:SetModel( model_file )
+
+		ent:SetPos( self.Owner:EyePos() + ( self.Owner:GetAimVector() * 16 ) )
+
+		ent:SetAngles( self.Owner:EyeAngles())
+
+		ent:Spawn()
+		local phys = ent:GetPhysicsObject()
+		if ( !IsValid( phys ) ) then ent:Remove() return end
+
+		local velocity = self.Owner:GetAimVector()
+		velocity = velocity * 50
+
+		phys:ApplyForceCenter( velocity * speed )
+
+		cleanup.Add( self.Owner, "props", ent )
+		undo.Create( "Thrown_Chair" )
+		undo.AddEntity( ent )
+		undo.SetPlayer( self.Owner )
+		undo.Finish()
+	end
+end
+local lastReload = os.time()
+function SWEP:Reload()
+	if os.time() < lastReload + 1 then return end
+	lastReload = os.time()
+	self:Shoot( "models/props_junk/watermelon01.mdl", 1)
+end
